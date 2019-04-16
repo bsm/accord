@@ -15,12 +15,12 @@ it's not picked up by another worker again.
 
 ## Architecture
 
-  +------------+         +------------+     +--------------+
-  |            |         |            |     |              |
-  |   WORKER   | -gRPC-> |   SERVER   | --> |   BACKEND    |
-  |   Client   | <------ |            | <-- |  PostgreSQL  |
-  |            |         |            |     |              |
-  +------------+         +------------+     +--------------+
+    +------------+         +------------+     +--------------+
+    |            |         |            |     |              |
+    |   WORKER   | -gRPC-> |   SERVER   | --> |   BACKEND    |
+    |   Client   | <------ |            | <-- |  PostgreSQL  |
+    |            |         |            |     |              |
+    +------------+         +------------+     +--------------+
 
 * Clients are connected to (a cluster of) Accord Servers and communicate via gRPC.
 * Servers are using a pluggable backend (currently, PostgreSQL only) to coordinate state.

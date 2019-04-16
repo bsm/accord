@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -149,6 +150,10 @@ func (b *postgres) List(ctx context.Context, filter *proto.ListRequest_Filter, i
 		}
 		if filter.Prefix != "" {
 			stmt = stmt.Where(sq.Like{"namespace": filter.Prefix + "%"})
+		}
+		if len(filter.Metadata) != 0 {
+			metadata, _ := json.Marshal(filter.Metadata)
+			stmt = stmt.Where("metadata @> ?", metadata)
 		}
 	}
 

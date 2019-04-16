@@ -133,15 +133,24 @@ func (b *Backend) List(_ context.Context, filter *proto.ListRequest_Filter, iter
 func (*Backend) Close() error { return nil }
 
 func isSelected(filter *proto.ListRequest_Filter, handle *backend.HandleData) bool {
-	keep := true
-
-	if keep && filter.Status == proto.ListRequest_Filter_DONE {
-		keep = handle.IsDone()
+	if filter.Status == proto.ListRequest_Filter_DONE && !handle.IsDone() {
+		return false
 	}
 
-	if keep && filter.Prefix != "" {
-		keep = strings.HasPrefix(handle.Namespace, filter.Prefix)
+	if filter.Prefix != "" && !strings.HasPrefix(handle.Namespace, filter.Prefix) {
+		return false
 	}
 
-	return keep
+	if len(filter.Metadata) != 0 {
+		if len(handle.Metadata) == 0 {
+			return false
+		}
+		for k, v := range filter.Metadata {
+			if handle.Metadata[k] != v {
+				return false
+			}
+		}
+	}
+
+	return true
 }

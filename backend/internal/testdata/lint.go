@@ -146,9 +146,9 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 			// Acquire 3 resources
 			h1, err := subject.Acquire(ctx, owner1, "a/b", "r1", now.Add(minute), nil)
 			Ω.Expect(err).NotTo(Ω.HaveOccurred())
-			h2, err := subject.Acquire(ctx, owner1, "a/b/c", "r2", now.Add(minute), nil)
+			h2, err := subject.Acquire(ctx, owner1, "a/b/c", "r2", now.Add(minute), map[string]string{"a": "1"})
 			Ω.Expect(err).NotTo(Ω.HaveOccurred())
-			h3, err := subject.Acquire(ctx, owner1, "a/x", "r3", now.Add(minute), nil)
+			h3, err := subject.Acquire(ctx, owner1, "a/x", "r3", now.Add(minute), map[string]string{"a": "1", "b": "2"})
 			Ω.Expect(err).NotTo(Ω.HaveOccurred())
 
 			// Mark 2+3 as done
@@ -179,6 +179,22 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 				return nil
 			})).To(Ω.Succeed())
 			Ω.Expect(results).To(Ω.HaveLen(2))
+
+			// With metadata #1
+			results = results[:0]
+			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Metadata: map[string]string{"a": "1"}}, func(h *backend.HandleData) error {
+				results = append(results, h)
+				return nil
+			})).To(Ω.Succeed())
+			Ω.Expect(results).To(Ω.HaveLen(2))
+
+			// With metadata #2
+			results = results[:0]
+			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Metadata: map[string]string{"b": "2"}}, func(h *backend.HandleData) error {
+				results = append(results, h)
+				return nil
+			})).To(Ω.Succeed())
+			Ω.Expect(results).To(Ω.HaveLen(1))
 
 			// No namespace match
 			results = results[:0]

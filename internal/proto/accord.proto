@@ -113,6 +113,8 @@ message ListRequest {
 		string prefix = 1;
 		// Only certain status.
 		Status status = 2;
+		// Filter by metadata.
+		map<string, string> metadata = 3;
 	}
 
 	// Filter object

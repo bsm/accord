@@ -33,6 +33,7 @@ func migrateV1(ctx context.Context, db *sql.DB) error {
 		`CREATE INDEX resource_handles_owner ON resource_handles USING btree (owner)`,
 		`CREATE INDEX resource_handles_expires_at ON resource_handles USING btree (expires_at)`,
 		`CREATE INDEX resource_handles_done_at ON resource_handles USING btree (done_at)`,
+		`CREATE INDEX resource_handles_metadata ON resource_handles USING gin (metadata)`,
 		`UPDATE meta_info SET version = 1`,
 	}
 
