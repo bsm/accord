@@ -14,11 +14,12 @@ import (
 
 // ClientOptions contains options for the client
 type ClientOptions struct {
-	Owner     string        // owner, default: random UUID
-	Namespace string        // namespace, default: ""
-	TTL       time.Duration // TTL, default: 10 minutes
-	Dir       string        // Data directory, defaults to './data'
-	OnError   func(error)   // custom error handler for background tasks
+	Owner     string            // owner, default: random UUID
+	Namespace string            // namespace, default: ""
+	Metadata  map[string]string // default metadata
+	TTL       time.Duration     // TTL, default: 10 minutes
+	Dir       string            // Data directory, defaults to './data'
+	OnError   func(error)       // custom error handler for background tasks
 }
 
 func (o *ClientOptions) ttlSeconds() uint32 {
@@ -47,6 +48,19 @@ func (o *ClientOptions) norm() *ClientOptions {
 		p.Dir = "data"
 	}
 	return &p
+}
+
+func (o *ClientOptions) mergeMeta(meta map[string]string) map[string]string {
+	if meta == nil && len(o.Metadata) != 0 {
+		meta = make(map[string]string, len(o.Metadata))
+	}
+	for k, v := range o.Metadata {
+		if _, ok := meta[k]; !ok {
+			meta[k] = v
+		}
+	}
+
+	return meta
 }
 
 // --------------------------------------------------------------------
@@ -122,7 +136,7 @@ func (c *client) Acquire(ctx context.Context, name string, meta map[string]strin
 		Name:      name,
 		Namespace: c.opt.Namespace,
 		Ttl:       c.opt.ttlSeconds(),
-		Metadata:  meta,
+		Metadata:  c.opt.mergeMeta(meta),
 	})
 	if err != nil {
 		return nil, err

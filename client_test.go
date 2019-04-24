@@ -18,7 +18,6 @@ var _ = Describe("Client", func() {
 	var subject accord.Client
 	var handle *accord.Handle
 	var tempDir string
-	var metadata = map[string]string{"a": "2", "b": "1"}
 	var ctx = context.Background()
 
 	BeforeEach(func() {
@@ -31,9 +30,10 @@ var _ = Describe("Client", func() {
 			Dir:       tempDir,
 			Owner:     "testclient",
 			Namespace: "test",
+			Metadata:  map[string]string{"x": "+"},
 		})
 
-		handle, err = subject.Acquire(ctx, "resource", metadata)
+		handle, err = subject.Acquire(ctx, "resource", map[string]string{"a": "2", "b": "1"})
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -45,7 +45,7 @@ var _ = Describe("Client", func() {
 
 	It("should acquire", func() {
 		Expect(handle.ID()).To(HaveLen(16))
-		Expect(handle.Metadata()).To(Equal(metadata))
+		Expect(handle.Metadata()).To(Equal(map[string]string{"a": "2", "b": "1", "x": "+"}))
 
 		stored, err := backend.Get(ctx, handle.ID())
 		Expect(err).NotTo(HaveOccurred())
@@ -55,7 +55,7 @@ var _ = Describe("Client", func() {
 		Expect(stored.Owner).To(Equal("testclient"))
 		Expect(stored.ExpTime).To(BeTemporally("~", time.Now().Add(10*time.Minute), time.Second))
 		Expect(stored.IsDone()).To(BeFalse())
-		Expect(stored.Metadata).To(Equal(metadata))
+		Expect(stored.Metadata).To(Equal(map[string]string{"a": "2", "b": "1", "x": "+"}))
 	})
 
 	It("should renew", func() {
@@ -63,12 +63,20 @@ var _ = Describe("Client", func() {
 		Expect(err).NotTo(HaveOccurred())
 		expTime := stored.ExpTime
 
-		Expect(handle.Renew(ctx, map[string]string{"c": "3"})).To(Succeed())
+		Expect(handle.Renew(ctx, nil)).To(Succeed())
 
 		stored, err = backend.Get(ctx, handle.ID())
 		Expect(err).NotTo(HaveOccurred())
 		Expect(stored.ExpTime).To(BeTemporally(">", expTime))
-		Expect(stored.Metadata).To(Equal(map[string]string{"a": "2", "b": "1", "c": "3"}))
+		Expect(stored.Metadata).To(Equal(map[string]string{"a": "2", "b": "1", "x": "+"}))
+	})
+
+	It("should renew with custom metadata", func() {
+		Expect(handle.Renew(ctx, map[string]string{"c": "3", "x": "-"})).To(Succeed())
+
+		stored, err := backend.Get(ctx, handle.ID())
+		Expect(err).NotTo(HaveOccurred())
+		Expect(stored.Metadata).To(Equal(map[string]string{"a": "2", "b": "1", "c": "3", "x": "-"}))
 	})
 
 	It("should discard", func() {
@@ -90,7 +98,7 @@ var _ = Describe("Client", func() {
 		stored, err := backend.Get(ctx, handle.ID())
 		Expect(err).NotTo(HaveOccurred())
 		Expect(stored.IsDone()).To(BeTrue())
-		Expect(stored.Metadata).To(Equal(map[string]string{"a": "2", "b": "1", "c": "3"}))
+		Expect(stored.Metadata).To(Equal(map[string]string{"a": "2", "b": "1", "c": "3", "x": "+"}))
 
 		Expect(handle.Discard()).To(Equal(accord.ErrClosed))
 		Expect(handle.Renew(ctx, nil)).To(Equal(accord.ErrClosed))

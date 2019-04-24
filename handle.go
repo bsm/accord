@@ -69,6 +69,8 @@ func (h *Handle) Done(ctx context.Context, meta map[string]string) error {
 		return ErrClosed
 	}
 
+	h.meta.Update(meta)
+
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
