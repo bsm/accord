@@ -81,7 +81,7 @@ func (s *service) Done(ctx context.Context, req *rpc.DoneRequest) (*rpc.DoneResp
 
 // List implements rpc.V1Server.
 func (s *service) List(req *rpc.ListRequest, srv rpc.V1_ListServer) error {
-	return s.b.List(srv.Context(), req.Filter, func(data *backend.HandleData) error {
+	return s.b.List(srv.Context(), req, func(data *backend.HandleData) error {
 		return srv.Send(convertHandle(data))
 	})
 }

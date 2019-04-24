@@ -163,10 +163,13 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 				return nil
 			})).To(Ω.Succeed())
 			Ω.Expect(results).To(Ω.HaveLen(3))
+			Ω.Expect(results[0].Name).To(Ω.Equal("r3"))
+			Ω.Expect(results[1].Name).To(Ω.Equal("r2"))
+			Ω.Expect(results[2].Name).To(Ω.Equal("r1"))
 
 			// List done
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Status: rpc.ListRequest_Filter_DONE}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Status: rpc.ListRequest_Filter_DONE}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -174,7 +177,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// With namespace
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Prefix: "a/b"}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Prefix: "a/b"}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -182,7 +185,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// With metadata #1
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Metadata: map[string]string{"a": "1"}}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Metadata: map[string]string{"a": "1"}}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -190,7 +193,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// With metadata #2
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Metadata: map[string]string{"b": "2"}}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Metadata: map[string]string{"b": "2"}}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -198,7 +201,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// No namespace match
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Prefix: "a/x/y"}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Prefix: "a/x/y"}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -206,11 +209,20 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// Stop after first
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Prefix: "a"}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Prefix: "a"}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return backend.ErrIteratorDone
 			})).To(Ω.Succeed())
 			Ω.Expect(results).To(Ω.HaveLen(1))
+
+			// With offset
+			results = results[:0]
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Offset: 2}, func(h *backend.HandleData) error {
+				results = append(results, h)
+				return nil
+			})).To(Ω.Succeed())
+			Ω.Expect(results).To(Ω.HaveLen(1))
+			Ω.Expect(results[0].Name).To(Ω.Equal("r1"))
 		})
 	}
 }

@@ -130,7 +130,7 @@ func (b *postgres) Get(ctx context.Context, handleID uuid.UUID) (*backend.Handle
 }
 
 // List implements the backend.Backend interface.
-func (b *postgres) List(ctx context.Context, filter *rpc.ListRequest_Filter, iter backend.Iterator) error {
+func (b *postgres) List(ctx context.Context, req *rpc.ListRequest, iter backend.Iterator) error {
 	stmt := b.stmt.
 		Select(
 			"id",
@@ -142,17 +142,22 @@ func (b *postgres) List(ctx context.Context, filter *rpc.ListRequest_Filter, ite
 			"done_at",
 			"metadata",
 		).
-		From("resource_handles")
+		From("resource_handles").
+		OrderBy("created_at DESC")
 
-	if filter != nil {
-		if filter.Status == rpc.ListRequest_Filter_DONE {
+	if o := req.GetOffset(); o != 0 {
+		stmt = stmt.Offset(o)
+	}
+
+	if f := req.GetFilter(); f != nil {
+		if f.Status == rpc.ListRequest_Filter_DONE {
 			stmt = stmt.Where(sq.NotEq{"done_at": nil})
 		}
-		if filter.Prefix != "" {
-			stmt = stmt.Where(sq.Like{"namespace": filter.Prefix + "%"})
+		if f.Prefix != "" {
+			stmt = stmt.Where(sq.Like{"namespace": f.Prefix + "%"})
 		}
-		if len(filter.Metadata) != 0 {
-			metadata, _ := json.Marshal(filter.Metadata)
+		if len(f.Metadata) != 0 {
+			metadata, _ := json.Marshal(f.Metadata)
 			stmt = stmt.Where("metadata @> ?", metadata)
 		}
 	}
