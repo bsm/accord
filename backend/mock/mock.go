@@ -9,7 +9,7 @@ import (
 
 	"github.com/bsm/accord"
 	"github.com/bsm/accord/backend"
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 )
 
@@ -113,7 +113,7 @@ func (b *Backend) Done(_ context.Context, owner string, handleID uuid.UUID, meta
 }
 
 // List implements the backend.Backend interface.
-func (b *Backend) List(_ context.Context, filter *proto.ListRequest_Filter, iter backend.Iterator) error {
+func (b *Backend) List(_ context.Context, filter *rpc.ListRequest_Filter, iter backend.Iterator) error {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
@@ -132,8 +132,8 @@ func (b *Backend) List(_ context.Context, filter *proto.ListRequest_Filter, iter
 // Close implements the backend.Backend interface.
 func (*Backend) Close() error { return nil }
 
-func isSelected(filter *proto.ListRequest_Filter, handle *backend.HandleData) bool {
-	if filter.Status == proto.ListRequest_Filter_DONE && !handle.IsDone() {
+func isSelected(filter *rpc.ListRequest_Filter, handle *backend.HandleData) bool {
+	if filter.Status == rpc.ListRequest_Filter_DONE && !handle.IsDone() {
 		return false
 	}
 

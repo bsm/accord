@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/bsm/accord/backend/mock"
-	"github.com/bsm/accord/internal/proto"
 	"github.com/bsm/accord/internal/service"
+	"github.com/bsm/accord/rpc"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("V1Service", func() {
-	var subject proto.V1Server
+	var subject rpc.V1Server
 	var backend *mock.Backend
 	var ctx = context.Background()
 	const owner = "THEOWNER"
@@ -24,12 +24,12 @@ var _ = Describe("V1Service", func() {
 	})
 
 	It("should acquire", func() {
-		_, err := subject.Acquire(ctx, &proto.AcquireRequest{})
+		_, err := subject.Acquire(ctx, &rpc.AcquireRequest{})
 		Expect(err).To(MatchError(`rpc error: code = InvalidArgument desc = invalid owner`))
-		_, err = subject.Acquire(ctx, &proto.AcquireRequest{Owner: owner})
+		_, err = subject.Acquire(ctx, &rpc.AcquireRequest{Owner: owner})
 		Expect(err).To(MatchError(`rpc error: code = InvalidArgument desc = invalid name`))
 
-		res, err := subject.Acquire(ctx, &proto.AcquireRequest{
+		res, err := subject.Acquire(ctx, &rpc.AcquireRequest{
 			Owner:     owner,
 			Namespace: "ns",
 			Name:      "resource",
@@ -37,7 +37,7 @@ var _ = Describe("V1Service", func() {
 			Metadata:  map[string]string{"k": "v"},
 		})
 		Expect(err).NotTo(HaveOccurred())
-		Expect(res.Status).To(Equal(proto.Status_OK))
+		Expect(res.Status).To(Equal(rpc.Status_OK))
 		Expect(res.Handle.Id).To(HaveLen(16))
 		Expect(res.Handle.Namespace).To(Equal("ns"))
 		Expect(res.Handle.Name).To(Equal("resource"))
@@ -47,15 +47,15 @@ var _ = Describe("V1Service", func() {
 	})
 
 	It("should renew", func() {
-		_, err := subject.Renew(ctx, &proto.RenewRequest{})
+		_, err := subject.Renew(ctx, &rpc.RenewRequest{})
 		Expect(err).To(MatchError(`rpc error: code = InvalidArgument desc = invalid owner`))
-		_, err = subject.Renew(ctx, &proto.RenewRequest{Owner: owner})
+		_, err = subject.Renew(ctx, &rpc.RenewRequest{Owner: owner})
 		Expect(err).To(MatchError(`rpc error: code = InvalidArgument desc = invalid handle ID`))
 
 		h, err := backend.Acquire(ctx, owner, "ns", "resource", time.Now(), nil)
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = subject.Renew(ctx, &proto.RenewRequest{Owner: owner, HandleId: h.ID[:], Ttl: 60})
+		_, err = subject.Renew(ctx, &rpc.RenewRequest{Owner: owner, HandleId: h.ID[:], Ttl: 60})
 		Expect(err).NotTo(HaveOccurred())
 
 		h, err = backend.Get(ctx, h.ID)
@@ -64,15 +64,15 @@ var _ = Describe("V1Service", func() {
 	})
 
 	It("should mark done", func() {
-		_, err := subject.Done(ctx, &proto.DoneRequest{})
+		_, err := subject.Done(ctx, &rpc.DoneRequest{})
 		Expect(err).To(MatchError(`rpc error: code = InvalidArgument desc = invalid owner`))
-		_, err = subject.Done(ctx, &proto.DoneRequest{Owner: owner})
+		_, err = subject.Done(ctx, &rpc.DoneRequest{Owner: owner})
 		Expect(err).To(MatchError(`rpc error: code = InvalidArgument desc = invalid handle ID`))
 
 		h, err := backend.Acquire(ctx, owner, "ns", "resource", time.Now(), nil)
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = subject.Done(ctx, &proto.DoneRequest{Owner: owner, HandleId: h.ID[:]})
+		_, err = subject.Done(ctx, &rpc.DoneRequest{Owner: owner, HandleId: h.ID[:]})
 		Expect(err).NotTo(HaveOccurred())
 
 		h, err = backend.Get(ctx, h.ID)
@@ -86,7 +86,7 @@ var _ = Describe("V1Service", func() {
 		Expect(backend.Acquire(ctx, owner, "", "res3", time.Now(), nil)).NotTo(BeNil())
 
 		mock := &mockListServer{}
-		Expect(subject.List(&proto.ListRequest{}, mock)).To(Succeed())
+		Expect(subject.List(&rpc.ListRequest{}, mock)).To(Succeed())
 		Expect(mock.sent).To(HaveLen(3))
 	})
 })
@@ -99,12 +99,12 @@ func TestSuite(t *testing.T) {
 }
 
 type mockListServer struct {
-	proto.V1_ListServer
-	sent []*proto.Handle
+	rpc.V1_ListServer
+	sent []*rpc.Handle
 }
 
 func (*mockListServer) Context() context.Context { return context.Background() }
-func (s *mockListServer) Send(h *proto.Handle) error {
+func (s *mockListServer) Send(h *rpc.Handle) error {
 	s.sent = append(s.sent, h)
 	return nil
 }

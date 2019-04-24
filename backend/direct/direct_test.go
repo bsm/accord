@@ -8,14 +8,14 @@ import (
 
 	"github.com/bsm/accord/backend/direct"
 	"github.com/bsm/accord/backend/mock"
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("ServerBypass", func() {
-	var subject proto.V1Client
+	var subject rpc.V1Client
 	var backend *mock.Backend
 	var ctx = context.Background()
 	const owner = "THEOWNER"
@@ -26,7 +26,7 @@ var _ = Describe("ServerBypass", func() {
 	})
 
 	It("should proxy RPC calls", func() {
-		res, err := subject.Acquire(ctx, &proto.AcquireRequest{
+		res, err := subject.Acquire(ctx, &rpc.AcquireRequest{
 			Owner: owner,
 			Name:  "resource",
 			Ttl:   60,
@@ -48,9 +48,9 @@ var _ = Describe("ServerBypass", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(backend.Done(ctx, owner, h3.ID, nil)).To(Succeed())
 
-		iter, err := subject.List(ctx, &proto.ListRequest{
-			Filter: &proto.ListRequest_Filter{
-				Status: proto.ListRequest_Filter_DONE,
+		iter, err := subject.List(ctx, &rpc.ListRequest{
+			Filter: &rpc.ListRequest_Filter{
+				Status: rpc.ListRequest_Filter_DONE,
 			},
 		})
 		Expect(err).NotTo(HaveOccurred())

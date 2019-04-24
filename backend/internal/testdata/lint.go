@@ -6,7 +6,7 @@ import (
 
 	"github.com/bsm/accord"
 	"github.com/bsm/accord/backend"
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 	G "github.com/onsi/ginkgo"
 	Ω "github.com/onsi/gomega"
@@ -166,7 +166,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// List done
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Status: proto.ListRequest_Filter_DONE}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Status: rpc.ListRequest_Filter_DONE}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -174,7 +174,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// With namespace
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Prefix: "a/b"}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Prefix: "a/b"}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -182,7 +182,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// With metadata #1
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Metadata: map[string]string{"a": "1"}}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Metadata: map[string]string{"a": "1"}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -190,7 +190,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// With metadata #2
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Metadata: map[string]string{"b": "2"}}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Metadata: map[string]string{"b": "2"}}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -198,7 +198,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// No namespace match
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Prefix: "a/x/y"}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Prefix: "a/x/y"}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return nil
 			})).To(Ω.Succeed())
@@ -206,7 +206,7 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 
 			// Stop after first
 			results = results[:0]
-			Ω.Expect(subject.List(ctx, &proto.ListRequest_Filter{Prefix: "a"}, func(h *backend.HandleData) error {
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest_Filter{Prefix: "a"}, func(h *backend.HandleData) error {
 				results = append(results, h)
 				return backend.ErrIteratorDone
 			})).To(Ω.Succeed())

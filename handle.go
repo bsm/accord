@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 )
 
@@ -14,7 +14,7 @@ import (
 // After a call to Done or Discard, all operations on the handle fail with ErrClosed.
 type Handle struct {
 	id   uuid.UUID
-	rpc  proto.V1Client
+	rpc  rpc.V1Client
 	meta *metadata
 	opt  *ClientOptions
 	mu   sync.Mutex
@@ -23,7 +23,7 @@ type Handle struct {
 	close context.CancelFunc
 }
 
-func newHandle(id uuid.UUID, rpc proto.V1Client, meta map[string]string, opt *ClientOptions) *Handle {
+func newHandle(id uuid.UUID, rpc rpc.V1Client, meta map[string]string, opt *ClientOptions) *Handle {
 	ctx, close := context.WithCancel(context.Background())
 	h := &Handle{
 		id:    id,
@@ -74,7 +74,7 @@ func (h *Handle) Done(ctx context.Context, meta map[string]string) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	_, err := h.rpc.Done(ctx, &proto.DoneRequest{
+	_, err := h.rpc.Done(ctx, &rpc.DoneRequest{
 		Owner:    h.opt.Owner,
 		HandleId: h.id[:],
 		Metadata: h.meta.Snap(),
@@ -108,7 +108,7 @@ func (h *Handle) renew(ctx context.Context, seconds uint32) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	_, err := h.rpc.Renew(ctx, &proto.RenewRequest{
+	_, err := h.rpc.Renew(ctx, &rpc.RenewRequest{
 		Owner:    h.opt.Owner,
 		HandleId: h.id[:],
 		Ttl:      seconds,

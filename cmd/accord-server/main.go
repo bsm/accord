@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/bsm/accord/backend/postgres"
-	"github.com/bsm/accord/internal/proto"
 	"github.com/bsm/accord/internal/service"
+	"github.com/bsm/accord/rpc"
 	"google.golang.org/grpc"
 )
 
@@ -47,6 +47,6 @@ func run(ctx context.Context) error {
 
 	log.Printf("Listening on %s\n", flags.addr)
 	srv := grpc.NewServer()
-	proto.RegisterV1Server(srv, service.New(backend))
+	rpc.RegisterV1Server(srv, service.New(backend))
 	return srv.Serve(lis)
 }

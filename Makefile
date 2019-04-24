@@ -7,10 +7,10 @@ test:
 
 # proto ---------------------------------------------------------------
 
-proto: proto.go
-proto.go: internal/proto/accord.pb.go
+proto: rpc.go
+rpc.go: rpc/accord.pb.go
 
-.PHONY: proto proto.go proto.deps
+.PHONY: proto rpc.go
 
 %.pb.go: %.proto
-	protoc --go_out=plugins=grpc,import_path=internal/proto:. --proto_path=.:$$GOPATH/src $<
+	protoc --go_out=plugins=grpc,import_path=rpc:. --proto_path=.:$$GOPATH/src $<

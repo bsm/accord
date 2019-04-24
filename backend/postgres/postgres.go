@@ -11,7 +11,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/bsm/accord"
 	"github.com/bsm/accord/backend"
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 )
 
@@ -130,7 +130,7 @@ func (b *postgres) Get(ctx context.Context, handleID uuid.UUID) (*backend.Handle
 }
 
 // List implements the backend.Backend interface.
-func (b *postgres) List(ctx context.Context, filter *proto.ListRequest_Filter, iter backend.Iterator) error {
+func (b *postgres) List(ctx context.Context, filter *rpc.ListRequest_Filter, iter backend.Iterator) error {
 	stmt := b.stmt.
 		Select(
 			"id",
@@ -145,7 +145,7 @@ func (b *postgres) List(ctx context.Context, filter *proto.ListRequest_Filter, i
 		From("resource_handles")
 
 	if filter != nil {
-		if filter.Status == proto.ListRequest_Filter_DONE {
+		if filter.Status == rpc.ListRequest_Filter_DONE {
 			stmt = stmt.Where(sq.NotEq{"done_at": nil})
 		}
 		if filter.Prefix != "" {
