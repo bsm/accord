@@ -1,4 +1,4 @@
-package proto
+package rpc
 
 import (
 	_ "github.com/golang/protobuf/proto" // include in go mod

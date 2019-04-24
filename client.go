@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/bsm/accord/internal/cache"
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
@@ -69,19 +69,21 @@ func (o *ClientOptions) mergeMeta(meta map[string]string) map[string]string {
 type Client interface {
 	// Acquire acquires a named resource handle.
 	Acquire(ctx context.Context, name string, meta map[string]string) (*Handle, error)
+	// RPC exposes the internal RPC client.
+	RPC() rpc.V1Client
 	// Close closes the connection.
 	Close() error
 }
 
 type client struct {
-	rpc   proto.V1Client
+	rpc   rpc.V1Client
 	opt   *ClientOptions
 	cache cache.Cache
 	ownCC *grpc.ClientConn
 }
 
 // RPCClient inits a new client.
-func RPCClient(ctx context.Context, rpc proto.V1Client, opt *ClientOptions) (Client, error) {
+func RPCClient(ctx context.Context, rpc rpc.V1Client, opt *ClientOptions) (Client, error) {
 	opt = opt.norm()
 	cache, err := cache.OpenBadger(filepath.Join(opt.Dir, "cache"))
 	if err != nil {
@@ -102,7 +104,7 @@ func RPCClient(ctx context.Context, rpc proto.V1Client, opt *ClientOptions) (Cli
 
 // WrapClient inits a new client by wrapping a gRCP client connection.
 func WrapClient(ctx context.Context, cc *grpc.ClientConn, opt *ClientOptions) (Client, error) {
-	return RPCClient(ctx, proto.NewV1Client(cc), opt)
+	return RPCClient(ctx, rpc.NewV1Client(cc), opt)
 }
 
 // DialClient creates a new client connection.
@@ -131,7 +133,7 @@ func (c *client) Acquire(ctx context.Context, name string, meta map[string]strin
 	}
 
 	// try to acquire
-	res, err := c.rpc.Acquire(ctx, &proto.AcquireRequest{
+	res, err := c.rpc.Acquire(ctx, &rpc.AcquireRequest{
 		Owner:     c.opt.Owner,
 		Name:      name,
 		Namespace: c.opt.Namespace,
@@ -143,9 +145,9 @@ func (c *client) Acquire(ctx context.Context, name string, meta map[string]strin
 	}
 
 	switch res.Status {
-	case proto.Status_HELD:
+	case rpc.Status_HELD:
 		return nil, ErrAcquired
-	case proto.Status_DONE:
+	case rpc.Status_DONE:
 		if err := c.cache.Add(name); err != nil {
 			return nil, err
 		}
@@ -154,6 +156,11 @@ func (c *client) Acquire(ctx context.Context, name string, meta map[string]strin
 
 	handleID := uuid.Must(uuid.FromBytes(res.Handle.Id))
 	return newHandle(handleID, c.rpc, res.Handle.Metadata, c.opt), nil
+}
+
+// RPC implements Client interface.
+func (c *client) RPC() rpc.V1Client {
+	return c.rpc
 }
 
 // Close implements Client interface.
@@ -173,10 +180,10 @@ func (c *client) Close() error {
 }
 
 func (c *client) fetchDone(ctx context.Context) error {
-	res, err := c.rpc.List(ctx, &proto.ListRequest{
-		Filter: &proto.ListRequest_Filter{
+	res, err := c.rpc.List(ctx, &rpc.ListRequest{
+		Filter: &rpc.ListRequest_Filter{
 			Prefix: c.opt.Namespace,
-			Status: proto.ListRequest_Filter_DONE,
+			Status: rpc.ListRequest_Filter_DONE,
 		},
 	})
 	if err != nil {

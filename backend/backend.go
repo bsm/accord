@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 )
 
@@ -34,7 +34,7 @@ type Backend interface {
 	Get(ctx context.Context, handleID uuid.UUID) (*HandleData, error)
 
 	// List iterates over done resources within a namespace
-	List(ctx context.Context, filter *proto.ListRequest_Filter, iter Iterator) error
+	List(ctx context.Context, filter *rpc.ListRequest_Filter, iter Iterator) error
 
 	// Close closes the backend connection.
 	Close() error

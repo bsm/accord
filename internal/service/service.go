@@ -6,7 +6,7 @@ import (
 
 	"github.com/bsm/accord"
 	"github.com/bsm/accord/backend"
-	"github.com/bsm/accord/internal/proto"
+	"github.com/bsm/accord/rpc"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,12 +17,12 @@ type service struct {
 }
 
 // New initalizes a new service
-func New(b backend.Backend) proto.V1Server {
+func New(b backend.Backend) rpc.V1Server {
 	return &service{b: b}
 }
 
-// Acquire implements proto.V1Server.
-func (s *service) Acquire(ctx context.Context, req *proto.AcquireRequest) (*proto.AcquireResponse, error) {
+// Acquire implements rpc.V1Server.
+func (s *service) Acquire(ctx context.Context, req *rpc.AcquireRequest) (*rpc.AcquireResponse, error) {
 	if req.Owner == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid owner")
 	}
@@ -32,21 +32,21 @@ func (s *service) Acquire(ctx context.Context, req *proto.AcquireRequest) (*prot
 
 	data, err := s.b.Acquire(ctx, req.Owner, req.Namespace, req.Name, expTime(req.Ttl), req.Metadata)
 	if err == accord.ErrDone {
-		return &proto.AcquireResponse{Status: proto.Status_DONE}, nil
+		return &rpc.AcquireResponse{Status: rpc.Status_DONE}, nil
 	} else if err == accord.ErrAcquired {
-		return &proto.AcquireResponse{Status: proto.Status_HELD}, nil
+		return &rpc.AcquireResponse{Status: rpc.Status_HELD}, nil
 	} else if err != nil {
 		return nil, err
 	}
 
-	return &proto.AcquireResponse{
-		Status: proto.Status_OK,
+	return &rpc.AcquireResponse{
+		Status: rpc.Status_OK,
 		Handle: convertHandle(data),
 	}, nil
 }
 
-// Renew implements proto.V1Server.
-func (s *service) Renew(ctx context.Context, req *proto.RenewRequest) (*proto.RenewResponse, error) {
+// Renew implements rpc.V1Server.
+func (s *service) Renew(ctx context.Context, req *rpc.RenewRequest) (*rpc.RenewResponse, error) {
 	if req.Owner == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid owner")
 	}
@@ -59,11 +59,11 @@ func (s *service) Renew(ctx context.Context, req *proto.RenewRequest) (*proto.Re
 	if err := s.b.Renew(ctx, req.Owner, handleID, expTime(req.Ttl), req.Metadata); err != nil {
 		return nil, err
 	}
-	return &proto.RenewResponse{}, nil
+	return &rpc.RenewResponse{}, nil
 }
 
-// Done implements proto.V1Server.
-func (s *service) Done(ctx context.Context, req *proto.DoneRequest) (*proto.DoneResponse, error) {
+// Done implements rpc.V1Server.
+func (s *service) Done(ctx context.Context, req *rpc.DoneRequest) (*rpc.DoneResponse, error) {
 	if req.Owner == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid owner")
 	}
@@ -76,19 +76,19 @@ func (s *service) Done(ctx context.Context, req *proto.DoneRequest) (*proto.Done
 	if err := s.b.Done(ctx, req.Owner, handleID, req.Metadata); err != nil {
 		return nil, err
 	}
-	return &proto.DoneResponse{}, nil
+	return &rpc.DoneResponse{}, nil
 }
 
-// List implements proto.V1Server.
-func (s *service) List(req *proto.ListRequest, srv proto.V1_ListServer) error {
+// List implements rpc.V1Server.
+func (s *service) List(req *rpc.ListRequest, srv rpc.V1_ListServer) error {
 	return s.b.List(srv.Context(), req.Filter, func(data *backend.HandleData) error {
 		return srv.Send(convertHandle(data))
 	})
 }
 
-func convertHandle(data *backend.HandleData) *proto.Handle {
+func convertHandle(data *backend.HandleData) *rpc.Handle {
 	expMillis := data.ExpTime.Unix()*1000 + int64(data.ExpTime.Nanosecond())/1e6
-	return &proto.Handle{
+	return &rpc.Handle{
 		Id:          data.ID[:],
 		Name:        data.Name,
 		Namespace:   data.Namespace,
