@@ -138,6 +138,8 @@ func (*Backend) Close() error { return nil }
 func isSelected(filter *rpc.ListRequest_Filter, handle *backend.HandleData) bool {
 	if filter.Status == rpc.ListRequest_Filter_DONE && !handle.IsDone() {
 		return false
+	} else if filter.Status == rpc.ListRequest_Filter_PENDING && handle.IsDone() {
+		return false
 	}
 
 	if filter.Prefix != "" && !strings.HasPrefix(handle.Namespace, filter.Prefix) {

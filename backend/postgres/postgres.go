@@ -152,6 +152,8 @@ func (b *postgres) List(ctx context.Context, req *rpc.ListRequest, iter backend.
 	if f := req.GetFilter(); f != nil {
 		if f.Status == rpc.ListRequest_Filter_DONE {
 			stmt = stmt.Where(sq.NotEq{"done_at": nil})
+		} else if f.Status == rpc.ListRequest_Filter_PENDING {
+			stmt = stmt.Where(sq.Eq{"done_at": nil})
 		}
 		if f.Prefix != "" {
 			stmt = stmt.Where(sq.Like{"namespace": f.Prefix + "%"})

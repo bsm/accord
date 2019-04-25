@@ -175,6 +175,14 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 			})).To(Ω.Succeed())
 			Ω.Expect(results).To(Ω.HaveLen(2))
 
+			// List pending
+			results = results[:0]
+			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Status: rpc.ListRequest_Filter_PENDING}}, func(h *backend.HandleData) error {
+				results = append(results, h)
+				return nil
+			})).To(Ω.Succeed())
+			Ω.Expect(results).To(Ω.HaveLen(1))
+
 			// With namespace
 			results = results[:0]
 			Ω.Expect(subject.List(ctx, &rpc.ListRequest{Filter: &rpc.ListRequest_Filter{Prefix: "a/b"}}, func(h *backend.HandleData) error {
