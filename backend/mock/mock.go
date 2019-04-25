@@ -23,6 +23,7 @@ type fullName struct {
 type Backend struct {
 	byName map[fullName]*backend.HandleData
 	byID   map[uuid.UUID]*backend.HandleData
+	asList []*backend.HandleData
 	mu     sync.RWMutex
 }
 
@@ -80,6 +81,7 @@ func (b *Backend) Acquire(_ context.Context, owner, namespace, name string, exp 
 
 	b.byID[handle.ID] = handle
 	b.byName[key] = handle
+	b.asList = append(b.asList, handle)
 
 	return handle, nil
 }
@@ -113,12 +115,13 @@ func (b *Backend) Done(_ context.Context, owner string, handleID uuid.UUID, meta
 }
 
 // List implements the backend.Backend interface.
-func (b *Backend) List(_ context.Context, filter *rpc.ListRequest_Filter, iter backend.Iterator) error {
+func (b *Backend) List(_ context.Context, req *rpc.ListRequest, iter backend.Iterator) error {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
-	for _, handle := range b.byName {
-		if filter == nil || isSelected(filter, handle) {
+	filter := req.GetFilter()
+	for i := len(b.asList) - 1 - int(req.GetOffset()); i >= 0; i-- {
+		if handle := b.asList[i]; filter == nil || isSelected(filter, handle) {
 			if err := iter(handle); err == backend.ErrIteratorDone {
 				break
 			} else if err != nil {

@@ -117,6 +117,9 @@ message ListRequest {
 		map<string, string> metadata = 3;
 	}
 
-	// Filter object
-  Filter filter = 1;
+	// Filter object.
+	Filter filter = 1;
+
+	// Skip the first N records.
+	uint64 offset = 2;
 }
