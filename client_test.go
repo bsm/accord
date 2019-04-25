@@ -15,7 +15,7 @@ import (
 
 var _ = Describe("Client", func() {
 	var backend *mock.Backend
-	var subject accord.Client
+	var subject *accord.Client
 	var handle *accord.Handle
 	var tempDir string
 	var ctx = context.Background()
