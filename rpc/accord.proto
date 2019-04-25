@@ -107,6 +107,7 @@ message ListRequest {
 		enum Status {
 			ALL = 0;
 			DONE = 1;
+			PENDING = 2;
 		}
 
 		// Namespace prefix.
