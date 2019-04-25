@@ -65,17 +65,8 @@ func (o *ClientOptions) mergeMeta(meta map[string]string) map[string]string {
 
 // --------------------------------------------------------------------
 
-// Client represents an accord client.
-type Client interface {
-	// Acquire acquires a named resource handle.
-	Acquire(ctx context.Context, name string, meta map[string]string) (*Handle, error)
-	// RPC exposes the internal RPC client.
-	RPC() rpc.V1Client
-	// Close closes the connection.
-	Close() error
-}
-
-type client struct {
+// Client is a convenience client to the accord API.
+type Client struct {
 	rpc   rpc.V1Client
 	opt   *ClientOptions
 	cache cache.Cache
@@ -83,14 +74,14 @@ type client struct {
 }
 
 // RPCClient inits a new client.
-func RPCClient(ctx context.Context, rpc rpc.V1Client, opt *ClientOptions) (Client, error) {
+func RPCClient(ctx context.Context, rpc rpc.V1Client, opt *ClientOptions) (*Client, error) {
 	opt = opt.norm()
 	cache, err := cache.OpenBadger(filepath.Join(opt.Dir, "cache"))
 	if err != nil {
 		return nil, err
 	}
 
-	client := &client{
+	client := &Client{
 		rpc:   rpc,
 		opt:   opt,
 		cache: cache,
@@ -103,12 +94,12 @@ func RPCClient(ctx context.Context, rpc rpc.V1Client, opt *ClientOptions) (Clien
 }
 
 // WrapClient inits a new client by wrapping a gRCP client connection.
-func WrapClient(ctx context.Context, cc *grpc.ClientConn, opt *ClientOptions) (Client, error) {
+func WrapClient(ctx context.Context, cc *grpc.ClientConn, opt *ClientOptions) (*Client, error) {
 	return RPCClient(ctx, rpc.NewV1Client(cc), opt)
 }
 
 // DialClient creates a new client connection.
-func DialClient(ctx context.Context, target string, opt *ClientOptions, dialOpt ...grpc.DialOption) (Client, error) {
+func DialClient(ctx context.Context, target string, opt *ClientOptions, dialOpt ...grpc.DialOption) (*Client, error) {
 	cc, err := grpc.DialContext(ctx, target, dialOpt...)
 	if err != nil {
 		return nil, err
@@ -119,12 +110,12 @@ func DialClient(ctx context.Context, target string, opt *ClientOptions, dialOpt 
 		return nil, err
 	}
 
-	ci.(*client).ownCC = cc
+	ci.ownCC = cc
 	return ci, nil
 }
 
 // Acquire implements ClientConn interface.
-func (c *client) Acquire(ctx context.Context, name string, meta map[string]string) (*Handle, error) {
+func (c *Client) Acquire(ctx context.Context, name string, meta map[string]string) (*Handle, error) {
 	// check in cache first
 	if found, err := c.cache.Contains(name); err != nil {
 		return nil, err
@@ -159,12 +150,12 @@ func (c *client) Acquire(ctx context.Context, name string, meta map[string]strin
 }
 
 // RPC implements Client interface.
-func (c *client) RPC() rpc.V1Client {
+func (c *Client) RPC() rpc.V1Client {
 	return c.rpc
 }
 
 // Close implements Client interface.
-func (c *client) Close() error {
+func (c *Client) Close() error {
 	var err error
 	if c.cache != nil {
 		if e2 := c.cache.Close(); e2 != nil {
@@ -179,7 +170,7 @@ func (c *client) Close() error {
 	return err
 }
 
-func (c *client) fetchDone(ctx context.Context) error {
+func (c *Client) fetchDone(ctx context.Context) error {
 	res, err := c.rpc.List(ctx, &rpc.ListRequest{
 		Filter: &rpc.ListRequest_Filter{
 			Prefix: c.opt.Namespace,
