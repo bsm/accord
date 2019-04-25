@@ -30,3 +30,8 @@ it's not picked up by another worker again.
 
 Please see the [API documentation](https://godoc.org/github.com/bsm/accord) for
 package and API descriptions and examples.
+
+## Backends
+
+* [PostgreSQL](https://godoc.org/github.com/bsm/accord/backend/postgres) - requires version >= 9.5.
+* [Mock](https://godoc.org/github.com/bsm/accord/backend/mock) - in-memory backend, for testing only.
