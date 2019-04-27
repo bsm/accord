@@ -76,14 +76,15 @@ func BehavesLikeBackend(data *BehavesLikeBackendData) func() {
 		})
 
 		G.It("should allow (re-)acquire when expired", func() {
-			h1, err := subject.Acquire(ctx, owner1, namespace, name, now.Add(minute), nil)
+			h1, err := subject.Acquire(ctx, owner1, namespace, name, now.Add(minute), map[string]string{"k": "v"})
 			Ω.Expect(err).NotTo(Ω.HaveOccurred())
-			Ω.Expect(subject.Renew(ctx, owner1, h1.ID, now.Add(-time.Second), nil)).To(Ω.Succeed())
+			Ω.Expect(subject.Renew(ctx, owner1, h1.ID, now.Add(-time.Second), map[string]string{"l": "w"})).To(Ω.Succeed())
 
 			h2, err := subject.Acquire(ctx, owner2, namespace, name, now.Add(minute), nil)
 			Ω.Expect(err).NotTo(Ω.HaveOccurred())
 			Ω.Expect(h2.ID).NotTo(Ω.Equal(h1.ID))
 			Ω.Expect(h2.Owner).To(Ω.Equal(owner2))
+			Ω.Expect(h2.Metadata).To(Ω.Equal(map[string]string{"k": "v", "l": "w"}))
 		})
 
 		G.It("should allow to renew", func() {

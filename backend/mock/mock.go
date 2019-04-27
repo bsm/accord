@@ -77,6 +77,7 @@ func (b *Backend) Acquire(_ context.Context, owner, namespace, name string, exp 
 		return nil, accord.ErrAcquired
 	} else if ok {
 		handle.NumAcquired = stored.NumAcquired + 1
+		handle.UpdateMetadata(stored.Metadata)
 	}
 
 	b.byID[handle.ID] = handle
