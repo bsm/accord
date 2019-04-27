@@ -87,12 +87,12 @@ func (s *service) List(req *rpc.ListRequest, srv rpc.V1_ListServer) error {
 }
 
 func convertHandle(data *backend.HandleData) *rpc.Handle {
-	expMillis := data.ExpTime.Unix()*1000 + int64(data.ExpTime.Nanosecond())/1e6
 	return &rpc.Handle{
 		Id:          data.ID[:],
 		Name:        data.Name,
 		Namespace:   data.Namespace,
-		ExpTime:     expMillis,
+		ExpTms:      timeToMillis(data.ExpTime),
+		DoneTms:     timeToMillis(data.DoneTime),
 		NumAcquired: uint32(data.NumAcquired),
 		Metadata:    data.Metadata,
 	}
@@ -100,4 +100,11 @@ func convertHandle(data *backend.HandleData) *rpc.Handle {
 
 func expTime(ttl uint32) time.Time {
 	return time.Now().Add(time.Second * time.Duration(ttl))
+}
+
+func timeToMillis(t time.Time) int64 {
+	if u := t.Unix(); u > 0 {
+		return u*1e3 + int64(t.Nanosecond())/1e6
+	}
+	return 0
 }

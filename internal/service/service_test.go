@@ -41,7 +41,7 @@ var _ = Describe("V1Service", func() {
 		Expect(res.Handle.Id).To(HaveLen(16))
 		Expect(res.Handle.Namespace).To(Equal("ns"))
 		Expect(res.Handle.Name).To(Equal("resource"))
-		Expect(res.Handle.ExpTime).To(BeNumerically("~", time.Now().Add(time.Minute).Unix()*1000, 2000))
+		Expect(res.Handle.ExpTime()).To(BeTemporally("~", time.Now().Add(time.Minute), 2*time.Second))
 		Expect(res.Handle.NumAcquired).To(Equal(uint32(1)))
 		Expect(res.Handle.Metadata).To(Equal(map[string]string{"k": "v"}))
 	})
@@ -83,11 +83,23 @@ var _ = Describe("V1Service", func() {
 	It("should list", func() {
 		Expect(backend.Acquire(ctx, owner, "", "res1", time.Now(), nil)).NotTo(BeNil())
 		Expect(backend.Acquire(ctx, owner, "", "res2", time.Now(), nil)).NotTo(BeNil())
-		Expect(backend.Acquire(ctx, owner, "", "res3", time.Now(), nil)).NotTo(BeNil())
+
+		h, err := backend.Acquire(ctx, owner, "", "res3", time.Now(), nil)
+		Expect(err).NotTo(HaveOccurred())
+		_, err = subject.Done(ctx, &rpc.DoneRequest{Owner: owner, HandleId: h.ID[:]})
+		Expect(err).NotTo(HaveOccurred())
 
 		mock := &mockListServer{}
 		Expect(subject.List(&rpc.ListRequest{}, mock)).To(Succeed())
 		Expect(mock.sent).To(HaveLen(3))
+
+		Expect(mock.sent[0].Name).To(Equal("res3"))
+		Expect(mock.sent[0].ExpTime()).To(BeTemporally("~", time.Now(), time.Second))
+		Expect(mock.sent[0].DoneTime()).To(BeTemporally("~", time.Now(), time.Second))
+
+		Expect(mock.sent[1].Name).To(Equal("res2"))
+		Expect(mock.sent[1].ExpTime()).To(BeTemporally("~", time.Now(), time.Second))
+		Expect(mock.sent[1].DoneTime()).To(BeZero())
 	})
 })
 

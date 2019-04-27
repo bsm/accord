@@ -13,10 +13,10 @@ message Handle {
   string namespace = 3;
 
   // Expiration UNIX timestamp (millisecond precision)
-	int64 exp_time = 4;
+	int64 exp_tms = 4;
 
 	// Done at UNIX timestamp (millisecond precision)
-	int64 done_time = 5;
+	int64 done_tms = 5;
 
 	// Describes the number of times this handle has been acquired.
 	uint32 num_acquired = 6;
