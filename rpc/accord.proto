@@ -3,16 +3,16 @@ package blacksquaremedia.accord;
 
 // Handle
 message Handle {
-  // Handle ID
-  bytes id = 1;
+	// Handle ID
+	bytes id = 1;
 
-  // Resource name/identifier, unique within namespace.
+	// Resource name/identifier, unique within namespace.
 	string name = 2;
 
-  // Custom namespace.
-  string namespace = 3;
+	// Custom namespace.
+	string namespace = 3;
 
-  // Expiration UNIX timestamp (millisecond precision)
+	// Expiration UNIX timestamp (millisecond precision)
 	int64 exp_tms = 4;
 
 	// Done at UNIX timestamp (millisecond precision)
@@ -44,20 +44,20 @@ service V1 {
 }
 
 enum Status {
-  OK = 0; // resource is OK
-  DONE = 1; // resource is marked as done
-  HELD = 2; // resource is currently held
+	OK = 0; // resource is OK
+	DONE = 1; // resource is marked as done
+	HELD = 2; // resource is currently held
 }
 
 message AcquireRequest {
 	// Owner identifier
 	string owner = 1;
 
-  // Resource name/identifier.
+	// Resource name/identifier.
 	string name = 2;
 
-  // Custom namespace.
-  string namespace = 3;
+	// Custom namespace.
+	string namespace = 3;
 
 	// TTL the maximum life-span of the acquired resource (in seconds).
 	uint32 ttl = 4;
@@ -75,7 +75,7 @@ message RenewRequest {
 	// Owner identifier.
 	string owner = 1;
 
-  // Handle identifier.
+	// Handle identifier.
 	bytes handle_id = 2;
 
 	// TTL the maximum life-span of the acquired resource (in seconds).
@@ -92,7 +92,7 @@ message DoneRequest {
 	// Owner identifier.
 	string owner = 1;
 
-  // Handle identifier.
+	// Handle identifier.
 	bytes handle_id = 2;
 
 	// Optional metadata.
