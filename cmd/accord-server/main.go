@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/bsm/accord/backend/postgres"
 	"github.com/bsm/accord/internal/service"
@@ -45,8 +46,12 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	log.Printf("Listening on %s\n", flags.addr)
 	srv := grpc.NewServer()
-	rpc.RegisterV1Server(srv, service.New(backend))
+	svc := service.New(backend)
+	rpc.RegisterV1Server(srv, svc)
+	hch := rpc.RunHealthCheck(srv, svc, "accord", 5*time.Second)
+	defer hch.Stop()
+
+	log.Printf("Listening on %s\n", flags.addr)
 	return srv.Serve(lis)
 }

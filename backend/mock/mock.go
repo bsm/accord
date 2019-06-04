@@ -133,6 +133,9 @@ func (b *Backend) List(_ context.Context, req *rpc.ListRequest, iter backend.Ite
 	return nil
 }
 
+// Ping implements the backend.Backend interface.
+func (*Backend) Ping() error { return nil }
+
 // Close implements the backend.Backend interface.
 func (*Backend) Close() error { return nil }
 

@@ -214,6 +214,9 @@ func (b *postgres) Done(ctx context.Context, owner string, handleID uuid.UUID, m
 	return performUpdate(ctx, stmt)
 }
 
+// Ping implements the backend.Backend interface.
+func (b *postgres) Ping() error { return b.DB.Ping() }
+
 // Close implements the backend.Backend interface.
 func (b *postgres) Close() error {
 	if b.ownDB {

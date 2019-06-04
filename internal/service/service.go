@@ -12,17 +12,23 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type service struct {
+// Service instances serve GRPC requests.
+type Service struct {
 	b backend.Backend
 }
 
 // New initalizes a new service
-func New(b backend.Backend) rpc.V1Server {
-	return &service{b: b}
+func New(b backend.Backend) *Service {
+	return &Service{b: b}
+}
+
+// Ping implements rpc.Pinger.
+func (s *Service) Ping() error {
+	return s.b.Ping()
 }
 
 // Acquire implements rpc.V1Server.
-func (s *service) Acquire(ctx context.Context, req *rpc.AcquireRequest) (*rpc.AcquireResponse, error) {
+func (s *Service) Acquire(ctx context.Context, req *rpc.AcquireRequest) (*rpc.AcquireResponse, error) {
 	if req.Owner == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid owner")
 	}
@@ -46,7 +52,7 @@ func (s *service) Acquire(ctx context.Context, req *rpc.AcquireRequest) (*rpc.Ac
 }
 
 // Renew implements rpc.V1Server.
-func (s *service) Renew(ctx context.Context, req *rpc.RenewRequest) (*rpc.RenewResponse, error) {
+func (s *Service) Renew(ctx context.Context, req *rpc.RenewRequest) (*rpc.RenewResponse, error) {
 	if req.Owner == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid owner")
 	}
@@ -63,7 +69,7 @@ func (s *service) Renew(ctx context.Context, req *rpc.RenewRequest) (*rpc.RenewR
 }
 
 // Done implements rpc.V1Server.
-func (s *service) Done(ctx context.Context, req *rpc.DoneRequest) (*rpc.DoneResponse, error) {
+func (s *Service) Done(ctx context.Context, req *rpc.DoneRequest) (*rpc.DoneResponse, error) {
 	if req.Owner == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid owner")
 	}
@@ -80,7 +86,7 @@ func (s *service) Done(ctx context.Context, req *rpc.DoneRequest) (*rpc.DoneResp
 }
 
 // List implements rpc.V1Server.
-func (s *service) List(req *rpc.ListRequest, srv rpc.V1_ListServer) error {
+func (s *Service) List(req *rpc.ListRequest, srv rpc.V1_ListServer) error {
 	return s.b.List(srv.Context(), req, func(data *backend.HandleData) error {
 		return srv.Send(convertHandle(data))
 	})

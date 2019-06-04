@@ -13,7 +13,8 @@ import (
 )
 
 var _ = Describe("V1Service", func() {
-	var subject rpc.V1Server
+	var subject *service.Service
+	var _ rpc.V1Server = subject
 	var backend *mock.Backend
 	var ctx = context.Background()
 	const owner = "THEOWNER"

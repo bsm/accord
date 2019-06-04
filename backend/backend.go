@@ -36,6 +36,9 @@ type Backend interface {
 	// List iterates over done resources within a namespace
 	List(ctx context.Context, req *rpc.ListRequest, iter Iterator) error
 
+	// Ping pings the backend connection.
+	Ping() error
+
 	// Close closes the backend connection.
 	Close() error
 }
