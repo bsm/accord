@@ -3,7 +3,7 @@ package cache
 import (
 	"os"
 
-	"github.com/dgraph-io/badger"
+	badger "github.com/dgraph-io/badger/v2"
 )
 
 type badgerCache struct {
@@ -67,7 +67,7 @@ type badgerBatchWriter struct {
 
 // Add implements BatchWriter interface.
 func (c *badgerBatchWriter) Add(name string) error {
-	return c.Set([]byte(name), nil, 0)
+	return c.Set([]byte(name), nil)
 }
 
 // Add implements BatchWriter interface.

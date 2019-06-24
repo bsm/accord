@@ -5,9 +5,8 @@ go 1.12
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9 // indirect
 	github.com/Masterminds/squirrel v1.1.0
-	github.com/dgraph-io/badger v2.0.0-rc.2+incompatible
+	github.com/dgraph-io/badger/v2 v2.0.0-rc.2+incompatible
 	github.com/dgryski/go-farm v0.0.0-20190416075124-e1214b5e05dc // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
