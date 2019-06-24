@@ -32,6 +32,7 @@ var _ = Describe("Client", func() {
 			Namespace: "test",
 			Metadata:  map[string]string{"x": "+"},
 		})
+		Expect(err).NotTo(HaveOccurred())
 
 		handle, err = subject.Acquire(ctx, "resource", map[string]string{"a": "2", "b": "1"})
 		Expect(err).NotTo(HaveOccurred())
