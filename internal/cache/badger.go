@@ -3,7 +3,7 @@ package cache
 import (
 	"os"
 
-	badger "github.com/dgraph-io/badger/v2"
+	"github.com/dgraph-io/badger"
 )
 
 type badgerCache struct {
@@ -17,9 +17,7 @@ func OpenBadger(dir string) (Cache, error) {
 		return nil, err
 	}
 
-	opts := badger.DefaultOptions
-	opts.Dir = dir
-	opts.ValueDir = dir
+	opts := badger.DefaultOptions(dir)
 	opts.Logger = nil
 	opts.Truncate = true
 
