@@ -3,7 +3,7 @@ package accord
 import (
 	"context"
 	"io"
-	"path/filepath"
+	"io/ioutil"
 	"time"
 
 	"github.com/bsm/accord/internal/cache"
@@ -18,7 +18,7 @@ type ClientOptions struct {
 	Namespace string            // namespace, default: ""
 	Metadata  map[string]string // default metadata
 	TTL       time.Duration     // TTL, default: 10 minutes
-	Dir       string            // Data directory, defaults to './data'
+	Dir       string            // Temporary directory, defaults to os.TempDir()
 	OnError   func(error)       // custom error handler for background tasks
 }
 
@@ -43,9 +43,6 @@ func (o *ClientOptions) norm() *ClientOptions {
 	}
 	if p.TTL < time.Second {
 		p.TTL = 10 * time.Minute
-	}
-	if p.Dir == "" {
-		p.Dir = "data"
 	}
 	return &p
 }
@@ -76,7 +73,13 @@ type Client struct {
 // RPCClient inits a new client.
 func RPCClient(ctx context.Context, rpc rpc.V1Client, opt *ClientOptions) (*Client, error) {
 	opt = opt.norm()
-	cache, err := cache.OpenBadger(filepath.Join(opt.Dir, "cache"))
+
+	cacheDir, err := ioutil.TempDir(opt.Dir, "accord-client-cache")
+	if err != nil {
+		return nil, err
+	}
+
+	cache, err := cache.OpenBadger(cacheDir)
 	if err != nil {
 		return nil, err
 	}
