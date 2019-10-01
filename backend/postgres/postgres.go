@@ -54,7 +54,6 @@ func OpenDB(ctx context.Context, db *sql.DB) (backend.Backend, error) {
 func (b *postgres) Acquire(ctx context.Context, owner, namespace, name string, exp time.Time, metadata map[string]string) (*backend.HandleData, error) {
 	handleID := uuid.New()
 	now := time.Now().UTC()
-
 	stmt := b.stmt.Insert("resource_handles").
 		Columns(
 			"id",
@@ -63,6 +62,8 @@ func (b *postgres) Acquire(ctx context.Context, owner, namespace, name string, e
 			"owner",
 			"expires_at",
 			"num_acquired",
+			"created_at",
+			"updated_at",
 			"metadata",
 		).
 		Values(
@@ -72,6 +73,8 @@ func (b *postgres) Acquire(ctx context.Context, owner, namespace, name string, e
 			owner,
 			exp,
 			1,
+			now,
+			now,
 			metaJSONb(metadata),
 		).
 		Suffix(`
@@ -79,7 +82,8 @@ func (b *postgres) Acquire(ctx context.Context, owner, namespace, name string, e
 				id           = CASE WHEN resource_handles.expires_at < ? AND resource_handles.done_at IS NULL THEN ? ELSE resource_handles.id END,
 				owner        = CASE WHEN resource_handles.expires_at < ? AND resource_handles.done_at IS NULL THEN ? ELSE resource_handles.owner END,
 				expires_at   = CASE WHEN resource_handles.expires_at < ? AND resource_handles.done_at IS NULL THEN ? ELSE resource_handles.expires_at END,
-				num_acquired = CASE WHEN resource_handles.expires_at < ? AND resource_handles.done_at IS NULL THEN resource_handles.num_acquired + 1 ELSE resource_handles.num_acquired END
+				num_acquired = CASE WHEN resource_handles.expires_at < ? AND resource_handles.done_at IS NULL THEN resource_handles.num_acquired + 1 ELSE resource_handles.num_acquired END,
+				updated_at   = ?
 			RETURNING
 				id,
 				namespace,
@@ -89,7 +93,7 @@ func (b *postgres) Acquire(ctx context.Context, owner, namespace, name string, e
 				num_acquired,
 				done_at,
 				metadata
-		`, now, handleID, now, owner, now, exp.UTC(), now)
+		`, now, handleID, now, owner, now, exp.UTC(), now, now)
 
 	handle, err := scanHandle(stmt.QueryRowContext(ctx))
 	if err != nil {
@@ -189,8 +193,10 @@ func (b *postgres) List(ctx context.Context, req *rpc.ListRequest, iter backend.
 
 // Renew implements the backend.Backend interface.
 func (b *postgres) Renew(ctx context.Context, owner string, handleID uuid.UUID, exp time.Time, metadata map[string]string) error {
+	now := time.Now().UTC()
 	stmt := b.stmt.Update("resource_handles").
 		Set("expires_at", exp.UTC()).
+		Set("updated_at", now).
 		Set("metadata", sq.Expr(`(metadata || ?)`, metaJSONb(metadata))).
 		Where(sq.Eq{
 			"id":      handleID,
@@ -205,6 +211,7 @@ func (b *postgres) Done(ctx context.Context, owner string, handleID uuid.UUID, m
 	now := time.Now().UTC()
 	stmt := b.stmt.Update("resource_handles").
 		Set("done_at", now).
+		Set("updated_at", now).
 		Set("metadata", sq.Expr(`(metadata || ?)`, metaJSONb(metadata))).
 		Where(sq.Eq{
 			"id":      handleID,
@@ -230,7 +237,12 @@ func (b *postgres) migrate(ctx context.Context) error {
 	_ = b.stmt.Select("version").From("meta_info").ScanContext(ctx, &version)
 
 	if version < 1 {
-		if err := migrateV1(ctx, b.DB); err != nil {
+		if err := migrateUp(ctx, b.DB, 1, migrateV1); err != nil {
+			return err
+		}
+	}
+	if version < 2 {
+		if err := migrateUp(ctx, b.DB, 2, migrateV2); err != nil {
 			return err
 		}
 	}
