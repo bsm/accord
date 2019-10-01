@@ -1,9 +1,9 @@
 language: go
 go:
-  - 1.11.x
+  - 1.13.x
   - 1.12.x
 addons:
-  postgresql: "9.5"
+  postgresql: "9.6"
 services:
   - postgresql
 before_script:
