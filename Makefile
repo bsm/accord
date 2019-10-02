@@ -1,5 +1,3 @@
-GITHUB_TOKEN:=$(shell sed ':a;N;$!ba;s/\n/ /g' ~/.netrc | grep -Po 'machine *github.com *login *\w+' | grep -Po '\w+$$')
-
 default: test
 
 test:
@@ -8,7 +6,7 @@ test:
 .PHONY: default test
 
 release:
-	GITHUB_TOKEN=$(GITHUB_TOKEN) goreleaser --rm-dist
+	GITHUB_TOKEN=$$(sed ':a;N;$!ba;s/\n/ /g' ~/.netrc | grep -Po 'machine *github.com *login *\w+' | grep -Po '\w+$') goreleaser --rm-dist
 
 # proto ---------------------------------------------------------------
 
