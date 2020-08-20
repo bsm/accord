@@ -6,7 +6,7 @@ test:
 .PHONY: default test
 
 release:
-	GITHUB_TOKEN=$$(sed ':a;N;$!ba;s/\n/ /g' ~/.netrc | grep -Po 'machine *github.com *login *\w+' | grep -Po '\w+$$') goreleaser --rm-dist
+	goreleaser --rm-dist
 
 # proto ---------------------------------------------------------------
 
