@@ -16,4 +16,4 @@ rpc.go: rpc/accord.pb.go
 .PHONY: proto rpc.go
 
 %.pb.go: %.proto
-	protoc --go_out=plugins=grpc,import_path=rpc:. --proto_path=.:$$GOPATH/src $<
+	protoc --go_out=plugins=grpc,paths=source_relative:. $<

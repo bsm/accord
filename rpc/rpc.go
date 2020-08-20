@@ -2,9 +2,6 @@ package rpc
 
 import (
 	"time"
-
-	_ "github.com/golang/protobuf/proto" // include in go mod
-	_ "google.golang.org/grpc"           // include in go mod
 )
 
 // IsDone returns true if resource is marked as done.

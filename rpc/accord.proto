@@ -1,126 +1,124 @@
 syntax = "proto3";
 package blacksquaremedia.accord;
+option go_package = "github.com/bsm/accord/rpc";
 
 // Handle
 message Handle {
-	// Handle ID
-	bytes id = 1;
+  // Handle ID
+  bytes id = 1;
 
-	// Resource name/identifier, unique within namespace.
-	string name = 2;
+  // Resource name/identifier, unique within namespace.
+  string name = 2;
 
-	// Custom namespace.
-	string namespace = 3;
+  // Custom namespace.
+  string namespace = 3;
 
-	// Expiration UNIX timestamp (millisecond precision)
-	int64 exp_tms = 4;
+  // Expiration UNIX timestamp (millisecond precision)
+  int64 exp_tms = 4;
 
-	// Done at UNIX timestamp (millisecond precision)
-	int64 done_tms = 5;
+  // Done at UNIX timestamp (millisecond precision)
+  int64 done_tms = 5;
 
-	// Describes the number of times this handle has been acquired.
-	uint32 num_acquired = 6;
+  // Describes the number of times this handle has been acquired.
+  uint32 num_acquired = 6;
 
-	// Metadata.
-	map<string, string> metadata = 8;
+  // Metadata.
+  map<string, string> metadata = 8;
 }
-
 
 // --------------------------------------------------------------------
 
 // V1 API
 service V1 {
-	// Acquire requests resource handle.
-	rpc Acquire(AcquireRequest) returns (AcquireResponse);
+  // Acquire requests resource handle.
+  rpc Acquire(AcquireRequest) returns (AcquireResponse);
 
-	// Renew renews resource handle.
-	rpc Renew(RenewRequest) returns (RenewResponse);
+  // Renew renews resource handle.
+  rpc Renew(RenewRequest) returns (RenewResponse);
 
-	// Done marks an handle as completed.
-	rpc Done(DoneRequest) returns (DoneResponse);
+  // Done marks an handle as completed.
+  rpc Done(DoneRequest) returns (DoneResponse);
 
-	// List streams handles that are done.
-	rpc List(ListRequest) returns (stream Handle);
+  // List streams handles that are done.
+  rpc List(ListRequest) returns (stream Handle);
 }
 
 enum Status {
-	OK = 0; // resource is OK
-	DONE = 1; // resource is marked as done
-	HELD = 2; // resource is currently held
+  OK = 0;   // resource is OK
+  DONE = 1; // resource is marked as done
+  HELD = 2; // resource is currently held
 }
 
 message AcquireRequest {
-	// Owner identifier
-	string owner = 1;
+  // Owner identifier
+  string owner = 1;
 
-	// Resource name/identifier.
-	string name = 2;
+  // Resource name/identifier.
+  string name = 2;
 
-	// Custom namespace.
-	string namespace = 3;
+  // Custom namespace.
+  string namespace = 3;
 
-	// TTL the maximum life-span of the acquired resource (in seconds).
-	uint32 ttl = 4;
+  // TTL the maximum life-span of the acquired resource (in seconds).
+  uint32 ttl = 4;
 
-	// Custom, optional metadata.
-	map<string, string> metadata = 5;
+  // Custom, optional metadata.
+  map<string, string> metadata = 5;
 }
 
 message AcquireResponse {
-	Status status = 1;
-	Handle handle = 2;
+  Status status = 1;
+  Handle handle = 2;
 }
 
 message RenewRequest {
-	// Owner identifier.
-	string owner = 1;
+  // Owner identifier.
+  string owner = 1;
 
-	// Handle identifier.
-	bytes handle_id = 2;
+  // Handle identifier.
+  bytes handle_id = 2;
 
-	// TTL the maximum life-span of the acquired resource (in seconds).
-	uint32 ttl = 3;
+  // TTL the maximum life-span of the acquired resource (in seconds).
+  uint32 ttl = 3;
 
-	// Optional metadata.
-	map<string, string> metadata = 4;
+  // Optional metadata.
+  map<string, string> metadata = 4;
 }
 
-message RenewResponse {
-}
+message RenewResponse {}
 
 message DoneRequest {
-	// Owner identifier.
-	string owner = 1;
+  // Owner identifier.
+  string owner = 1;
 
-	// Handle identifier.
-	bytes handle_id = 2;
+  // Handle identifier.
+  bytes handle_id = 2;
 
-	// Optional metadata.
-	map<string, string> metadata = 3;
+  // Optional metadata.
+  map<string, string> metadata = 3;
 }
 
-message DoneResponse {
-}
+message DoneResponse {}
 
 message ListRequest {
-	message Filter {
-		enum Status {
-			ALL = 0;
-			DONE = 1;
-			PENDING = 2;
-		}
+  message Filter {
+    enum Status {
+      ALL = 0;
+      DONE = 1;
+      PENDING = 2;
+    }
 
-		// Namespace prefix.
-		string prefix = 1;
-		// Only certain status.
-		Status status = 2;
-		// Filter by metadata.
-		map<string, string> metadata = 3;
-	}
+    // Namespace prefix.
+    string prefix = 1;
+    // Only certain status.
+    Status status = 2;
+    // Filter by metadata.
+    map<string, string> metadata = 3;
+  }
 
-	// Filter object.
-	Filter filter = 1;
+  // Filter object.
+  Filter filter = 1;
 
-	// Skip the first N records.
-	uint64 offset = 2;
+  // Skip the first N records.
+  uint64 offset = 2;
 }
