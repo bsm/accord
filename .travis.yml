@@ -1,7 +1,7 @@
 language: go
 go:
-  - 1.13.x
-  - 1.12.x
+  - 1.14.x
+  - 1.15.x
 addons:
   postgresql: "9.6"
 services:
@@ -9,7 +9,7 @@ services:
 before_script:
   - psql -c 'create database ci_test;' -U postgres
 env:
-  - GO111MODULE=on DATABASE_DSN=postgres://127.0.0.1/ci_test
+  - DATABASE_DSN=postgres://127.0.0.1/ci_test
 cache:
   directories:
     - $GOPATH/pkg/mod
