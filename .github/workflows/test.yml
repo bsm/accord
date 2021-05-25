@@ -51,6 +51,6 @@ jobs:
       - name: Run tests
         run: make test
         env:
-          DATABASE_DSN: postgresql://postgres:s3cret@localhost:${{ job.services.postgres.ports[5432] }}/ci_test
+          DATABASE_DSN: postgresql://postgres:s3cret@localhost:${{ job.services.postgres.ports[5432] }}/ci_test?sslmode=disable
       - name: Run staticcheck
         run: make staticcheck
