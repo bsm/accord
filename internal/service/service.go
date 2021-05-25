@@ -14,6 +14,8 @@ import (
 
 // Service instances serve GRPC requests.
 type Service struct {
+	rpc.UnimplementedV1Server
+
 	b backend.Backend
 }
 

@@ -5,8 +5,11 @@ test:
 
 .PHONY: default test
 
-release:
-	goreleaser --rm-dist
+staticcheck:
+	staticcheck ./...
+
+release-snapshot:
+	goreleaser --rm-dist --snapshot
 
 # proto ---------------------------------------------------------------
 
@@ -16,4 +19,6 @@ rpc.go: rpc/accord.pb.go
 .PHONY: proto rpc.go
 
 %.pb.go: %.proto
-	protoc --go_out=plugins=grpc,paths=source_relative:. $<
+	protoc --go_out=. --go_opt=paths=source_relative \
+         --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+         $<
