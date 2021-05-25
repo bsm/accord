@@ -5,8 +5,11 @@ test:
 
 .PHONY: default test
 
-release:
-	goreleaser --rm-dist
+staticcheck:
+	staticcheck ./...
+
+release-snapshot:
+	goreleaser --rm-dist --snapshot
 
 # proto ---------------------------------------------------------------
 
