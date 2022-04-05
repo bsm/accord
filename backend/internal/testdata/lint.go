@@ -7,9 +7,9 @@ import (
 	"github.com/bsm/accord"
 	"github.com/bsm/accord/backend"
 	"github.com/bsm/accord/rpc"
+	G "github.com/bsm/ginkgo/v2"
+	Ω "github.com/bsm/gomega"
 	"github.com/google/uuid"
-	G "github.com/onsi/ginkgo"
-	Ω "github.com/onsi/gomega"
 )
 
 // BehavesLikeBackendData contains a subject
