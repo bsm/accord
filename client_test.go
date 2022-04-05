@@ -39,7 +39,7 @@ var _ = Describe("Client", func() {
 	})
 
 	AfterEach(func() {
-		handle.Discard()
+		_ = handle.Discard()
 		Expect(subject.Close()).To(Succeed())
 		Expect(os.RemoveAll(tempDir)).To(Succeed())
 	})
