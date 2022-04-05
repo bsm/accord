@@ -1,0 +1,6 @@
+linters-settings:
+  errcheck:
+    exclude-functions:
+      - (*database/sql.Tx).Rollback
+      - (*github.com/bsm/accord.Handle).Discard
+      - (github.com/bsm/accord/internal/cache.BatchWriter).Discard

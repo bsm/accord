@@ -8,8 +8,8 @@ import (
 	"github.com/bsm/accord/backend/mock"
 	"github.com/bsm/accord/internal/service"
 	"github.com/bsm/accord/rpc"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/bsm/ginkgo/v2"
+	. "github.com/bsm/gomega"
 )
 
 var _ = Describe("V1Service", func() {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/bsm/accord/backend/internal/testdata"
 	"github.com/bsm/accord/backend/mock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/bsm/ginkgo/v2"
+	. "github.com/bsm/gomega"
 )
 
 var _ = Describe("Backend", func() {

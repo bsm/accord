@@ -8,9 +8,9 @@ import (
 
 	"github.com/bsm/accord/backend/internal/testdata"
 	"github.com/bsm/accord/backend/postgres"
+	. "github.com/bsm/ginkgo/v2"
+	. "github.com/bsm/gomega"
 	"github.com/joho/godotenv"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Backend", func() {

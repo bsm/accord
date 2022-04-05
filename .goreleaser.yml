@@ -8,7 +8,7 @@ builds:
       - darwin
       - linux
     goarch:
-      - 386
+      - "386"
       - amd64
       - arm
       - arm64
@@ -25,7 +25,7 @@ dockers:
   - goarch: amd64
     image_templates:
       - blacksquaremedia/accord:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-amd64
-    use_buildx: true
+    use: buildx
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -37,7 +37,7 @@ dockers:
   - goarch: arm64
     image_templates:
       - blacksquaremedia/accord:{{ .Major }}.{{ .Minor }}.{{ .Patch }}-arm64
-    use_buildx: true
+    use: buildx
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"

@@ -9,8 +9,8 @@ import (
 	"github.com/bsm/accord"
 	"github.com/bsm/accord/backend/direct"
 	"github.com/bsm/accord/backend/mock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/bsm/ginkgo/v2"
+	. "github.com/bsm/gomega"
 )
 
 var _ = Describe("Client", func() {
@@ -39,7 +39,7 @@ var _ = Describe("Client", func() {
 	})
 
 	AfterEach(func() {
-		handle.Discard()
+		_ = handle.Discard()
 		Expect(subject.Close()).To(Succeed())
 		Expect(os.RemoveAll(tempDir)).To(Succeed())
 	})

@@ -9,9 +9,9 @@ import (
 	"github.com/bsm/accord/backend/direct"
 	"github.com/bsm/accord/backend/mock"
 	"github.com/bsm/accord/rpc"
+	. "github.com/bsm/ginkgo/v2"
+	. "github.com/bsm/gomega"
 	"github.com/google/uuid"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("ServerBypass", func() {

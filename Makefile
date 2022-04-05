@@ -5,8 +5,8 @@ test:
 
 .PHONY: default test
 
-staticcheck:
-	staticcheck ./...
+lint:
+	golangci-lint run
 
 release-snapshot:
 	goreleaser --rm-dist --snapshot
