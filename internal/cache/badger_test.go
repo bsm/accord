@@ -1,7 +1,6 @@
 package cache_test
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/bsm/accord/internal/cache"
@@ -15,7 +14,7 @@ var _ = Describe("Badger", func() {
 
 	BeforeEach(func() {
 		var err error
-		tempDir, err = ioutil.TempDir("", "accord-cache-test")
+		tempDir, err = os.MkdirTemp("", "accord-cache-test")
 		Expect(err).NotTo(HaveOccurred())
 
 		subject, err = cache.OpenBadger(tempDir)

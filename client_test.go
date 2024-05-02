@@ -2,7 +2,6 @@ package accord_test
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -22,7 +21,7 @@ var _ = Describe("Client", func() {
 
 	BeforeEach(func() {
 		var err error
-		tempDir, err = ioutil.TempDir("", "accord-client-test")
+		tempDir, err = os.MkdirTemp("", "accord-client-test")
 		Expect(err).NotTo(HaveOccurred())
 
 		backend = mock.New()

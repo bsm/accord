@@ -3,7 +3,7 @@ package accord
 import (
 	"context"
 	"io"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/bsm/accord/internal/cache"
@@ -74,7 +74,7 @@ type Client struct {
 func RPCClient(ctx context.Context, rpc rpc.V1Client, opt *ClientOptions) (*Client, error) {
 	opt = opt.norm()
 
-	cacheDir, err := ioutil.TempDir(opt.Dir, "accord-client-cache")
+	cacheDir, err := os.MkdirTemp(opt.Dir, "accord-client-cache")
 	if err != nil {
 		return nil, err
 	}
